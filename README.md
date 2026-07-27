@@ -1,7 +1,7 @@
 # PhyloMiner
-`PhyloMiner` is a command-line pipeline for identifying and extracting homologous genes from large collections of protein or coding sequence (CDS) databases.
+`PhyloMiner` is a command-line pipeline for identifying and extracting homologous sequences from large collections of protein or coding sequence (CDS) databases.
 
-It was developed to streamline a common comparative genomics workflow: search databases for homologues, filter candidate hits, extract the matching sequences, and prepare datasets for downstream phylogenetic analysis.
+It was developed to streamline a common comparative genomics workflow: searching databases for homologues, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloMiner` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses.
 
 ## Overview
 `PhyloMiner` automates the following steps:
