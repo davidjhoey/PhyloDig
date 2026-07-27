@@ -6,21 +6,20 @@ It was developed to streamline a common comparative genomics workflow: search da
 ## Overview
 `PhyloMiner` automates the following steps:
 
-- detects whether the query and database are protein or nucleotide input
-- searches protein databases directly with phmmer
-- translates CDS databases to protein before searching
-- optionally filters candidate hits with one or more Pfam profile HMMs using hmmsearch
-- extracts matching protein sequences
-- extracts corresponding CDS sequences when a nucleotide database is used
-- writes summary tables and run information for downstream analysis and record keeping
-- can optionally retain intermediate files for inspection and troubleshooting
-- can optionally retain below-threshold phmmer hits for more permissive searches
-
-The pipeline is designed to be robust in handling inconsistent gene identifiers and difficult datasets.
+- Automatically detects whether the query and database are protein or nucleotide input.
+- Searches protein databases directly with phmmer and retains homologs above the inclusion threshold.
+- There is an optional permissive mode using `--keep-below-threshold` which retains HMMER hits which did not meet the inclusion threshold. 
+- Translates CDS databases to protein before searching using `transeq`.
+- Optionally filters candidate hits with one or more Pfam profile HMMs using `hmmsearch`.
+- Extracts matching protein sequences.
+- Extracts corresponding CDS sequences when a nucleotide database is used.
+- Writes summary tables and run information for downstream analysis and record keeping.
+- Optionally retains intermediate files for inspection and troubleshooting.
+- The pipeline is designed to be robust in handling inconsistent gene identifiers and difficult datasets.
 
 ## Installation 
 ### Dependencies
-PhyloMiner uses the following tools:
+`PhyloMiner` uses the following tools:
 
 - HMMER (`phmmer`, `hmmsearch`, `hmmfetch`)
 - EMBOSS (`transeq`)
@@ -78,7 +77,7 @@ Filter extracted proteins using one or more HMM profiles
 - `--pfam-db PATH`
 HMM database used for --motif-hmm
 - `-h`, `--help`
-Show help and exit
+Show help and exit.
 
 ## Workflow
 ```
@@ -151,7 +150,7 @@ trimal -in output_align.fasta -out output_trim.fasta -fasta -gappyout
 iqtree2 -s output_trim.fasta -m MFP -bb 10000 -ninit 10000 -nm 10000 -T AUTO
 ```
 ## Citation
-If you use PhyloMiner in published research, please consider citing this repository or the associated publication, when available:
+If you use `PhyloMiner` in published research, please consider citing this repository or the associated publication, when available:
 - Hoey DJ. *PhyloMiner: automated homology mining for comparative genomics*. GitHub repository: https://github.com/davidjhoey/phylominer
 
 ## Licence
