@@ -151,7 +151,7 @@ iqtree2 -s output_trim.fasta -m MFP -bb 10000 -ninit 10000 -nm 10000 -T AUTO
 ```
 ## Citation
 If you use `PhyloMiner` in published research, please consider citing this repository or the associated publication, when available:
-- Hoey DJ. *PhyloMiner: automated homology mining for comparative genomics*. GitHub repository: https://github.com/davidjhoey/phylominer
+- Hoey DJ. *PhyloMiner: automated homology mining for comparative phylogenomics*. GitHub repository: https://github.com/davidjhoey/phylominer
 
 ## Licence
 PhyloMiner is released under the GNU General Public License v3.0 (GPLv3). This means that the software and derivative versions will remain freely available, modifiable, and open source.
