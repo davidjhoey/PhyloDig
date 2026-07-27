@@ -151,7 +151,7 @@ trimal -in output_align.fasta -out output_trim.fasta -fasta -gappyout
 iqtree2 -s output_trim.fasta -m MFP -bb 10000 -ninit 10000 -nm 10000 -T AUTO
 ```
 ## Citation
-If you use PhyloMiner in published research, please consider citing this repository or the associated publicaition, when available:
+If you use PhyloMiner in published research, please consider citing this repository or the associated publication, when available:
 - Hoey DJ. *PhyloMiner: automated homology mining for comparative genomics*. GitHub repository: https://github.com/davidjhoey/phylominer
 
 ## Licence
