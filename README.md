@@ -143,6 +143,7 @@ After extracting homologs, standard phylogenetic processing can be carried out w
 - `trimal` or `phyx` for automatic trimming
 - `iqtree` or `iqtree2` for tree inference
 - `iTOL` or `FigTree` for tree visualisation
+
 A typical workflow is:
 ```
 mafft --localpair --maxiterate 1000 input.fasta > output_align.fasta
