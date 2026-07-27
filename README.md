@@ -1,7 +1,7 @@
 # PhyloMiner
 `PhyloMiner` is a command-line pipeline for identifying and extracting homologous sequences from collections of protein or coding sequence (CDS) databases.
 
-It was developed to streamline a common comparative genomics workflow: searching databases for homologues, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloMiner` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses across diverse genomic datasets.
+It was developed to streamline a common comparative genomics workflow: searching databases for homologs, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloMiner` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses across diverse genomic datasets.
 
 ## Overview
 `PhyloMiner` automates the following steps:
@@ -99,7 +99,7 @@ Show help and exit.
                      ▼
       (Optional) Pfam HMM filtering
                      ▼
-            Protein homologues
+              Protein homologs
                      ▼
 If nucleotide database: Extract CDS sequences
                      ▼
@@ -125,7 +125,7 @@ These outputs are useful for:
 
 ## Below-threshold searches
 
-- By default, `PhyloMiner` follows the standard HMMER inclusion thresholds and reports only statistically significant homologues. However, `PhyloMiner` can optionally retain hits below the default HMMER inclusion threshold (`--include-below-threshold`).
+- By default, `PhyloMiner` follows the standard HMMER inclusion thresholds and reports only statistically significant homologs. However, `PhyloMiner` can optionally retain hits below the default HMMER inclusion threshold (`--include-below-threshold`).
 - This is a practical way to search for highly divergent homologs, and is particularly useful when used in combination with the optional Pfam domain filtering (`--motif-hmm HMM_ID`) to recover true family members that might otherwise be missed.
 - Including below-threshold hits may also be desirable when searching distantly related species, poorly annotated genomes, or attempting to trace the broader evolutionary origins of a particular gene family.
 
