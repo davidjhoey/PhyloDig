@@ -99,11 +99,11 @@ Show help and exit.
                      ▼
       (Optional) Pfam HMM filtering
                      ▼
-              Protein homologs
+Extract protein homologs from original database
                      ▼
-If nucleotide database: Extract CDS sequences
+If nucleotide database: Extract CDS sequences too
                      ▼
-  Protein FASTA + CDS FASTA + summary table
+ Protein FASTAs + CDS FASTAs + summary table
 ```
 ## Output
 
