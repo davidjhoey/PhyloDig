@@ -6,7 +6,7 @@ It was developed to streamline a common comparative genomics workflow: searching
 ## Overview
 `PhyloMiner` automates the following steps:
 
-- Automatically detects whether the query and database are protein or nucleotide input.
+- Automatically detects whether the query and database are protein or nucleotide input (multifasta supported for queries).
 - Searches protein databases directly with `phmmer` and retains homologs above the inclusion threshold.
 - There is an optional permissive mode using `--keep-below-threshold` which retains HMMER hits which did not meet the inclusion threshold. 
 - Translates CDS databases to protein before searching using `transeq`.
@@ -128,10 +128,15 @@ These outputs are useful for:
 - This is a practical way to search for highly divergent homologs, and is particularly useful when used in combination with the optional Pfam domain filtering (`--motif-hmm HMM_ID`) to recover true family members that might otherwise be missed.
 - Including below-threshold hits may also be desirable when searching distantly related species, poorly annotated genomes, or attempting to trace the broader evolutionary origins of a particular gene family.
 
+## Multifasta mode
+- Input queries can be in multifasta format, as well as single-sequence input.
+- Each query will get its own folder with a folder name derived from the sequence header name.
+- Please note: applying PFAM filters in multifasta mode will result in the same PFAM filter being applied to all queries which may not be desirable.
+
 ## Other notes
 - If a database is nucleotide-based, both protein and CDS outputs are written.
 - Input databases should be in `.fa` FASTA format, which are protected from deletion by the script.
-- `PhyloMiner` could be combined with _ab initio_ annotation software, such as `Helixer`, to reduce biases introduced by different annotation softwares for lineage-specific gene discovery. 
+- `PhyloMiner` could be combined with _ab initio_ annotation software, such as `Helixer`, to reduce biases introduced by different annotation softwares for lineage-specific gene discovery.
 
 ## Downstream analysis
 After extracting homologs, standard phylogenetic processing can be carried out with the following recommended tools:
