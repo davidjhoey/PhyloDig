@@ -6,7 +6,7 @@ ORIGINAL_ARGS=("$@")
 
 usage() {
   cat <<'EOF'
-PhyloMiner v1.2.2
+PhyloMiner v1.3.0
 Usage:
   ./phylominer.sh [options] query.fasta /path/to/databases
 
@@ -25,6 +25,7 @@ Options:
 
 Notes:
   - If the query is nucleotide, it is translated with transeq using frame 1.
+  - Queries can be single sequences or multifasta.
   - Database files are treated as protein or CDS automatically.
   - If a database is nucleotide, a protein FASTA and a CDS FASTA are both written.
   - HMM filtering is applied after phmmer hit extraction.
@@ -98,6 +99,7 @@ translate_cds_to_protein() {
   transeq \
     -sequence "$cds_fa" \
     -outseq "$prot_fa" \
+    -trim \
     -frame 1
 
   sed -i 's/^\(>[^[:space:]]*\)_1\([[:space:]]\|$\)/\1\2/' "$prot_fa"
@@ -372,7 +374,9 @@ cleanup_temp_files() {
     "$WORKDIR"/*.ids \
     "${CDS_ID_LIST}.failsafe1.txt" \
     "${CDS_ID_LIST}.failsafe2.txt" \
-    "$WORKDIR"/*.hmm 
+    "$WORKDIR"/*.hmm \
+    "${CDS_ID_LIST}.pipe" \
+    "${CDS_ID_LIST}.headers" 
    do
     safe_rm "$f"
    done 
@@ -383,7 +387,7 @@ KEEP_TEMP=false
 THREADS=1
 PFAM_DB=""
 MOTIF_HMMS=()
-VERSION="1.2.2"
+VERSION="1.3.0"
 INCLUDE_BELOW_THRESHOLD=false
 
 while [[ $# -gt 0 ]]; do
@@ -405,6 +409,11 @@ if [[ $# -ne 2 ]]; then
   exit 1
 fi
 
+if ! [[ "$THREADS" =~ ^[0-9]+$ ]] || [[ "$THREADS" -lt 1 ]]; then
+    echo "ERROR: --threads must be a positive integer"
+    exit 1
+fi
+
 QUERY="$1"
 DB_DIR="$2"
 
@@ -416,6 +425,28 @@ fi
 if [[ ! -d "$DB_DIR" ]]; then
   echo "ERROR: database directory not found: $DB_DIR" >&2
   exit 1
+fi
+
+QUERY_COUNT=$(grep -c '^>' "$QUERY")
+if [[ "$QUERY_COUNT" -eq 0 ]]; then
+  echo "ERROR: query FASTA contains no sequences" >&2
+  exit 1
+fi
+
+QUERY_FILES=()
+
+if [[ "$QUERY_COUNT" -eq 1 ]]; then
+    QUERY_FILES+=("$QUERY")
+else
+    TMP_QUERY_DIR=$(mktemp -d)
+    echo "[INFO] Multifasta mode activated"
+
+    seqkit split \
+        -i \
+        -O "$TMP_QUERY_DIR" \
+        "$QUERY"
+
+    QUERY_FILES=("$TMP_QUERY_DIR"/*.fasta)
 fi
 
 require_cmd phmmer
@@ -447,11 +478,20 @@ fi
 
 
 
-BASE_DIR="$DB_DIR"
-WORKDIR="$BASE_DIR/phylominer_work"
-PROT_DIR="$BASE_DIR/proteins"
-CDS_DIR="$BASE_DIR/CDS"
-LOG_FILE="$BASE_DIR/phylominer.txt"
+for QUERY in "${QUERY_FILES[@]}"
+do
+(
+    QUERY_NAME=$(grep '^>' "$QUERY" | head -1 | sed 's/^>//' | sed 's/[| ].*$//' )
+    QUERY_NAME=$(echo "$QUERY_NAME" | sed 's/[^a-zA-Z0-9._-]/_/g')
+    QUERY_NAME=$(echo "$QUERY_NAME" | sed 's/_*$//')
+
+
+    BASE_DIR="$DB_DIR/${QUERY_NAME}_results"
+    WORKDIR="$BASE_DIR/phylominer_work"
+    PROT_DIR="$BASE_DIR/proteins"
+    CDS_DIR="$BASE_DIR/CDS"
+    LOG_FILE="$BASE_DIR/phylominer.txt"
+    mkdir -p "$WORKDIR" "$PROT_DIR" "$CDS_DIR"
 
 {
   echo "PhyloMiner v${VERSION}"
@@ -477,8 +517,6 @@ LOG_FILE="$BASE_DIR/phylominer.txt"
 
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-mkdir -p "$WORKDIR" "$PROT_DIR" "$CDS_DIR"
-
 if [[ "$KEEP_TEMP" == true ]]; then
   LOG_DIR="$BASE_DIR/logfiles"
   mkdir -p "$LOG_DIR"
@@ -486,7 +524,7 @@ else
   LOG_DIR="$WORKDIR"
 fi
 
-SUMMARY_CSV="$DB_DIR/$(basename "${QUERY%.*}")_hit_summary.csv"
+SUMMARY_CSV="$BASE_DIR/${QUERY_NAME}_hit_summary.csv"
 printf 'database,total_protein_seqs,phmmer_hits_total,phmmer_below_threshold,extracted_proteins,hmmsearch_filtered_out,proteins_final,cds_final,cds_output_exists,prot_output_exists\n' > "$SUMMARY_CSV"
 
 
@@ -511,7 +549,7 @@ for db in "${DB_FILES[@]}"; do
   base=$(basename "$db")
 
   case "$base" in
-    hit_summary.csv)
+    hit_summary.csv|*_results)
       continue
       ;;
   esac
@@ -716,6 +754,23 @@ for db in "${DB_FILES[@]}"; do
 done
 
 safe_rm "$QUERY_PROT"
-safe_rm "$PROT_DB_TRANSLATED"
 
-echo "[INFO] Finished. Summary written to: $SUMMARY_CSV"
+if [[ -n "${PROT_DB_TRANSLATED:-}" ]]; then
+    safe_rm "$PROT_DB_TRANSLATED"
+fi
+
+if [[ "$KEEP_TEMP" == false && -d "$WORKDIR" && "$WORKDIR" == "$BASE_DIR"/* ]]; then
+    rm -rf "$WORKDIR"
+fi
+
+echo "[INFO] Finished query: $QUERY_NAME"
+echo "[INFO] Summary written to: $SUMMARY_CSV"
+
+)
+done
+
+if [[ -n "${TMP_QUERY_DIR:-}" ]]; then
+    rm -rf "$TMP_QUERY_DIR"
+fi
+
+echo "[INFO] Finished all queries."
