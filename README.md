@@ -128,12 +128,10 @@ These outputs are useful for:
 - This is a practical way to search for highly divergent homologs, and is particularly useful when used in combination with the optional Pfam domain filtering (`--motif-hmm HMM_ID`) to recover true family members that might otherwise be missed.
 - Including below-threshold hits may also be desirable when searching distantly related species, poorly annotated genomes, or attempting to trace the broader evolutionary origins of a particular gene family.
 
-## Notes
-- Query and database type are detected automatically.
-- CDS input is translated using `transeq`
+## Other notes
 - If a database is nucleotide-based, both protein and CDS outputs are written.
-- HMM filtering is applied after `phmmer` searches.
 - Input databases should be in `.fa` FASTA format, which are protected from deletion by the script.
+- `PhyloMiner` could be combined with _ab initio_ annotation software, such as `Helixer`, to reduce biases introduced by different annotation softwares for lineage-specific gene discovery. 
 
 ## Downstream analysis
 After extracting homologs, standard phylogenetic processing can be carried out with the following recommended tools:
