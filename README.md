@@ -7,7 +7,7 @@ It was developed to streamline a common comparative genomics workflow: searching
 `PhyloMiner` automates the following steps:
 
 - Automatically detects whether the query and database are protein or nucleotide input.
-- Searches protein databases directly with phmmer and retains homologs above the inclusion threshold.
+- Searches protein databases directly with `phmmer` and retains homologs above the inclusion threshold.
 - There is an optional permissive mode using `--keep-below-threshold` which retains HMMER hits which did not meet the inclusion threshold. 
 - Translates CDS databases to protein before searching using `transeq`.
 - Optionally filters candidate hits with one or more Pfam profile HMMs using `hmmsearch`.
@@ -75,7 +75,7 @@ Retain phmmer hits below the default HMMER inclusion threshold
 - `--motif-hmm HMM_ID`
 Filter extracted proteins using one or more HMM profiles
 - `--pfam-db PATH`
-HMM database used for --motif-hmm
+HMM database used for `--motif-hmm`
 - `-h`, `--help`
 Show help and exit.
 
@@ -120,8 +120,7 @@ These outputs are useful for:
 - presence/absence screening
 - gene family surveys across many genomes
 - downstream multiple sequence alignment
-- phylogenetic inference
-- gene family evolution analyses
+- phylogenetic inference and gene family evolution analyses
 
 ## Below-threshold searches
 
