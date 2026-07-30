@@ -6,7 +6,7 @@ ORIGINAL_ARGS=("$@")
 
 usage() {
   cat <<'EOF'
-PhyloMiner v1.3.0
+PhyloMiner v1.3.1
 Usage:
   ./phylominer.sh [options] query.fasta /path/to/databases
 
@@ -382,12 +382,37 @@ cleanup_temp_files() {
    done 
 }
 
+check_translation_cache_complete() {
+
+    local db name translated
+    local missing=()
+
+    for db in "$DB_DIR"/*.fa; do
+        [[ -f "$db" ]] || continue
+
+        name=$(basename "$db" .fa)
+        translated="$TRANSLATED_DIR/${name}.translated.prot.fasta"
+
+        if [[ ! -s "$translated" ]]; then
+            missing+=("$name")
+        fi
+    done
+
+    if [[ ${#missing[@]} -eq 0 ]]; then
+        echo "[INFO] Existing translation cache is complete and will be reused."
+    else
+        echo "[INFO] Existing translation cache is incomplete."
+        echo "[INFO] Missing translations will be created for:"
+        printf '       %s\n' "${missing[@]}"
+    fi
+}
+
 FORCE=false
 KEEP_TEMP=false
 THREADS=1
 PFAM_DB=""
 MOTIF_HMMS=()
-VERSION="1.3.0"
+VERSION="1.3.1"
 INCLUDE_BELOW_THRESHOLD=false
 
 while [[ $# -gt 0 ]]; do
@@ -476,7 +501,16 @@ if [[ ${#MOTIF_HMMS[@]} -gt 0 ]]; then
   MOTIF_HMMS=("${RESOLVED_MOTIFS[@]}")
 fi
 
+CACHE_DIR="$DB_DIR/.phylominer_cache"
+TRANSLATED_DIR="$CACHE_DIR/translated_databases"
 
+mkdir -p "$TRANSLATED_DIR"
+
+if [[ -n "$(find "$TRANSLATED_DIR" -maxdepth 1 -name '*.fasta' -print -quit)" ]]; then
+    echo "[INFO] Existing translation cache detected:"
+    echo "       $TRANSLATED_DIR"
+    check_translation_cache_complete
+fi
 
 for QUERY in "${QUERY_FILES[@]}"
 do
@@ -574,7 +608,7 @@ for db in "${DB_FILES[@]}"; do
   ID_LIST="$LOG_DIR/${name}_hit_ids.txt"
   PROT_OUT="$PROT_DIR/${name}.homologs.prot.fasta"
   CDS_OUT="$CDS_DIR/${name}.homologs.cds.fasta"
-  PROT_DB_TRANSLATED="$WORKDIR/${name}.translated.prot.fasta"
+  PROT_DB_TRANSLATED="$TRANSLATED_DIR/${name}.translated.prot.fasta"
   PROT_DB_CLEAN="$WORKDIR/${name}.prot.clean.fasta"
   CDS_DB_CLEAN="$WORKDIR/${name}.cds.clean.fasta"
   CDS_ID_LIST="$WORKDIR/${name}.cds.ids"
@@ -597,7 +631,12 @@ for db in "${DB_FILES[@]}"; do
     DB_TYPE="cds"
     echo "[INFO] $name appears to be nucleotide"
     standardize_fasta_headers "$db" "$CDS_DB_CLEAN"
-    translate_cds_to_protein "$CDS_DB_CLEAN" "$PROT_DB_TRANSLATED"
+    if [[ ! -s "$PROT_DB_TRANSLATED" ]]; then
+        echo "[INFO] Creating cached translation for $name"
+        translate_cds_to_protein "$CDS_DB_CLEAN" "$PROT_DB_TRANSLATED"
+    else
+        echo "[INFO] Reusing cached translation for $name"
+    fi
     PROT_DB="$PROT_DB_TRANSLATED"
     TOTAL_SEQS=$(safe_count "$CDS_DB_CLEAN")
   else
@@ -755,9 +794,6 @@ done
 
 safe_rm "$QUERY_PROT"
 
-if [[ -n "${PROT_DB_TRANSLATED:-}" ]]; then
-    safe_rm "$PROT_DB_TRANSLATED"
-fi
 
 if [[ "$KEEP_TEMP" == false && -d "$WORKDIR" && "$WORKDIR" == "$BASE_DIR"/* ]]; then
     rm -rf "$WORKDIR"
