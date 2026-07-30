@@ -36,7 +36,11 @@ brew install hmmer emboss seqkit
 ```
 If you plan to use Pfam-based filtering, you will also need a Pfam HMM database such as `Pfam-A.hmm`.
 Download Pfam-A.hmm from https://www.ebi.ac.uk/interpro/download/Pfam/ (last accessed 02-07-2026).
-
+You will also need to prepare the HMM profiles from Pfam-A.hmm using `hmmpress`. You will only need to do this once.
+```
+hmmpress ./Pfam-A.hmm
+```
+This produces four index files which will allow `hmmscan` to work.
 ### Usage
 `PhyloMiner` is currently distributed as a shell script. Make the script executable:
 ```
