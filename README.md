@@ -40,7 +40,7 @@ You will also need to prepare the HMM profiles from Pfam-A.hmm using `hmmpress`.
 ```
 hmmpress ./Pfam-A.hmm
 ```
-This produces four index files which will allow `hmmscan` to work.
+This produces four index files which will allow `hmmsearch` to work.
 ### Usage
 `PhyloMiner` is currently distributed as a shell script. Make the script executable:
 ```
