@@ -126,6 +126,25 @@ These outputs are useful for:
 - downstream multiple sequence alignment
 - phylogenetic inference and gene family evolution analyses
 
+### Directory structure
+```
+database_directory/
+│
+├── Input databases (*.fa)
+│
+├── Query_results/
+│   ├── Summary statistics (.csv)
+│   ├── Run log (phylominer.txt)
+│   ├── Homologous protein sequences/
+│   ├── Corresponding CDS sequences/
+│   ├── Search log files (optional, --keep-temp)
+│   └── Temporary working files (deleted by default)
+│
+└── .phylominer_cache/
+    └── translated_databases/
+        └── Cached protein translations of CDS databases
+```
+
 ## Below-threshold searches
 
 - By default, `PhyloMiner` follows the standard HMMER inclusion thresholds and reports only statistically significant homologs. However, `PhyloMiner` can optionally retain hits below the default HMMER inclusion threshold (`--include-below-threshold`).
