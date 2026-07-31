@@ -126,7 +126,7 @@ These outputs are useful for:
 - downstream multiple sequence alignment
 - phylogenetic inference and gene family evolution analyses
 
-### Directory structure
+### Typical directory structure
 ```
 database_directory/
 │
@@ -144,6 +144,7 @@ database_directory/
     └── translated_databases/
         └── Cached protein translations of CDS databases
 ```
+In multifasta mode, PhyloMiner also produces a master phylominer.txt log and a summary table of all queries.
 
 ## Below-threshold searches
 
@@ -155,6 +156,7 @@ database_directory/
 - Input queries can be in multifasta format, as well as single-sequence input.
 - Each query will get its own folder with a folder name derived from the sequence header name.
 - Please note: applying PFAM filters in multifasta mode will result in the same PFAM filter being applied to all queries which may not be desirable.
+- In multifasta mode, PhyloMiner will produce a final summary table with all final protein hits for each query.
 
 ## Other notes
 - If a database is nucleotide-based, both protein and CDS outputs are written.
