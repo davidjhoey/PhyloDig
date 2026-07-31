@@ -6,7 +6,7 @@ ORIGINAL_ARGS=("$@")
 
 usage() {
   cat <<'EOF'
-PhyloMiner v1.3.1
+PhyloMiner v1.3.2
 Usage:
   ./phylominer.sh [options] query.fasta /path/to/databases
 
@@ -407,12 +407,97 @@ check_translation_cache_complete() {
     fi
 }
 
+combine_query_summaries() {
+  local out_csv="$DB_DIR/${RUN_ID}_combined_hit_summary.csv"
+
+  local summaries=()
+  for dir in "${CURRENT_RESULT_DIRS[@]}"; do
+    shopt -s nullglob
+    summaries+=("$dir"/*_hit_summary.csv)
+    shopt -u nullglob
+  done
+
+  if [[ ${#summaries[@]} -eq 0 ]]; then
+    echo "[WARN] No summary files found to combine."
+    return 0
+  fi
+
+  echo "[INFO] Combining ${#summaries[@]} summary files."
+
+  awk -F',' -v OFS=',' '
+    function qname_from_path(path,   n, a, q) {
+      n = split(path, a, "/")
+      q = a[n]
+      sub(/_hit_summary\.csv$/, "", q)
+      return q
+    }
+
+    FNR == 1 {
+      q = qname_from_path(FILENAME)
+      query_order[++qcount] = q
+      file_of_q[q] = FILENAME
+
+      proteins_col = 0
+      for (i = 1; i <= NF; i++) {
+        if ($i == "proteins_final") {
+          proteins_col = i
+          break
+        }
+      }
+
+      if (proteins_col == 0) {
+        print "ERROR: proteins_final column not found in " FILENAME > "/dev/stderr"
+        exit 1
+      }
+
+      next
+    }
+
+    {
+      db = $1
+      val = $proteins_col
+
+      if (!(db in db_seen)) {
+        db_seen[db] = 1
+        db_order[++dbcount] = db
+      }
+
+      data[db, FILENAME] = val
+    }
+
+    END {
+      printf "database"
+      for (i = 1; i <= qcount; i++) {
+        printf OFS "%s", query_order[i]
+      }
+      print ""
+
+      for (i = 1; i <= dbcount; i++) {
+        db = db_order[i]
+        printf "%s", db
+        for (j = 1; j <= qcount; j++) {
+          q = query_order[j]
+          f = file_of_q[q]
+          if ((db, f) in data) {
+            printf OFS data[db, f]
+          } else {
+            printf OFS 0
+          }
+        }
+        print ""
+      }
+    }
+  ' "${summaries[@]}" > "$out_csv"
+
+  echo "[INFO] Combined summary written to: $out_csv"
+}
+
 FORCE=false
 KEEP_TEMP=false
 THREADS=1
 PFAM_DB=""
 MOTIF_HMMS=()
-VERSION="1.3.1"
+VERSION="1.3.2"
 INCLUDE_BELOW_THRESHOLD=false
 
 while [[ $# -gt 0 ]]; do
@@ -441,6 +526,8 @@ fi
 
 QUERY="$1"
 DB_DIR="$2"
+RUN_ID=$(date +"%Y%m%d_%H%M%S")
+MASTER_LOG="$DB_DIR/phylominer_${RUN_ID}.txt"
 
 if [[ ! -f "$QUERY" ]]; then
   echo "ERROR: query file not found: $QUERY" >&2
@@ -512,24 +599,52 @@ if [[ -n "$(find "$TRANSLATED_DIR" -maxdepth 1 -name '*.fasta' -print -quit)" ]]
     check_translation_cache_complete
 fi
 
+if [[ "$QUERY_COUNT" -gt 1 ]]; then
+{
+  echo "PhyloMiner v${VERSION}"
+  echo "Date: $(date)"
+  echo "Run ID: ${RUN_ID}"
+  echo "Command:"
+  printf '  %q' "$0" "${ORIGINAL_ARGS[@]}"
+  echo
+  echo
+  echo "Number of queries: ${QUERY_COUNT}"
+  echo "Database directory: ${DB_DIR}"
+  echo
+  echo "Run settings:"
+  echo "  Threads                   : $THREADS"
+  echo "  Force                     : $FORCE"
+  echo "  Keep temp                 : $KEEP_TEMP"
+  echo "  Include below threshold   : $INCLUDE_BELOW_THRESHOLD"
+  echo "  Pfam database             : ${PFAM_DB:-None}"
+  
+} > "$MASTER_LOG"
+fi
+
+CURRENT_RESULT_DIRS=()
+
 for QUERY in "${QUERY_FILES[@]}"
 do
-(
+
     QUERY_NAME=$(grep '^>' "$QUERY" | head -1 | sed 's/^>//' | sed 's/[| ].*$//' )
     QUERY_NAME=$(echo "$QUERY_NAME" | sed 's/[^a-zA-Z0-9._-]/_/g')
     QUERY_NAME=$(echo "$QUERY_NAME" | sed 's/_*$//')
 
-
     BASE_DIR="$DB_DIR/${QUERY_NAME}_results"
+    CURRENT_RESULT_DIRS+=("$BASE_DIR")
+
+(
     WORKDIR="$BASE_DIR/phylominer_work"
     PROT_DIR="$BASE_DIR/proteins"
     CDS_DIR="$BASE_DIR/CDS"
-    LOG_FILE="$BASE_DIR/phylominer.txt"
+    LOG_FILE="$BASE_DIR/${QUERY_NAME}_${RUN_ID}_phylominer.txt"
     mkdir -p "$WORKDIR" "$PROT_DIR" "$CDS_DIR"
-
+    CURRENT_RESULT_DIRS+=("$BASE_DIR")
+    
 {
   echo "PhyloMiner v${VERSION}"
   echo "Date: $(date)"
+  echo "Run ID: ${RUN_ID}"
   echo "Working directory: $(pwd)"
   echo "Command:"
   printf '  %q' "$0" "${ORIGINAL_ARGS[@]}"
@@ -549,7 +664,22 @@ do
   fi
 } > "$LOG_FILE"
 
-exec > >(tee -a "$LOG_FILE") 2>&1
+
+if [[ "$QUERY_COUNT" -gt 1 ]]; then
+    {
+      echo
+      echo "=================================================="
+      echo "Starting query: ${QUERY_NAME}"
+      echo "=================================================="
+      echo
+    } >> "$MASTER_LOG"
+fi
+
+if [[ "$QUERY_COUNT" -gt 1 ]]; then
+    exec > >(tee -a "$LOG_FILE" "$MASTER_LOG") 2>&1
+else
+    exec > >(tee -a "$LOG_FILE") 2>&1
+fi
 
 if [[ "$KEEP_TEMP" == true ]]; then
   LOG_DIR="$BASE_DIR/logfiles"
@@ -559,8 +689,19 @@ else
 fi
 
 SUMMARY_CSV="$BASE_DIR/${QUERY_NAME}_hit_summary.csv"
-printf 'database,total_protein_seqs,phmmer_hits_total,phmmer_below_threshold,extracted_proteins,hmmsearch_filtered_out,proteins_final,cds_final,cds_output_exists,prot_output_exists\n' > "$SUMMARY_CSV"
+SUMMARY_EXISTS_BEFORE_RUN=false
+if [[ -s "$SUMMARY_CSV" ]]; then
+    SUMMARY_EXISTS_BEFORE_RUN=true
+fi
 
+WRITE_SUMMARY=true
+if [[ "$FORCE" == false && "$SUMMARY_EXISTS_BEFORE_RUN" == true ]]; then
+    WRITE_SUMMARY=false
+fi
+
+if [[ "$WRITE_SUMMARY" == true ]]; then
+    printf 'database,total_protein_seqs,phmmer_hits_total,phmmer_below_threshold,extracted_proteins,hmmsearch_filtered_out,proteins_final,cds_final,cds_output_exists,prot_output_exists\n' > "$SUMMARY_CSV"
+fi
 
 QUERY_PROT="$WORKDIR/query.prot.fasta"
 if is_nucleotide_fasta "$QUERY"; then
@@ -576,6 +717,8 @@ fi
 shopt -s nullglob
 DB_FILES=("$DB_DIR"/*)
 shopt -u nullglob
+
+
 
 for db in "${DB_FILES[@]}"; do
   [[ -f "$db" ]] || continue
@@ -670,7 +813,9 @@ for db in "${DB_FILES[@]}"; do
     echo "---- phmmer error for $name ----"
     tail -20 "$PHMMER_TXT" || true
     echo "--------------------------------"
-    printf '%s,%s,0,0,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" >> "$SUMMARY_CSV"
+    if [[ "$WRITE_SUMMARY" == true ]]; then
+        printf '%s,%s,0,0,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" >> "$SUMMARY_CSV"
+    fi
     continue
   fi
 
@@ -678,7 +823,9 @@ for db in "${DB_FILES[@]}"; do
 
   if [[ ! -s "$PHMMER_TBL" ]] || [[ $(grep -vc '^#' "$PHMMER_TBL" || true) -eq 0 ]]; then
     echo "[INFO] No above-threshold phmmer hits for $name"
-    printf '%s,%s,0,%s,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" "$PHMMER_BELOW_THRESHOLD" >> "$SUMMARY_CSV"
+    if [[ "$WRITE_SUMMARY" == true ]]; then
+        printf '%s,%s,0,%s,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" "$PHMMER_BELOW_THRESHOLD" >> "$SUMMARY_CSV"
+    fi    
     continue
   fi
 
@@ -692,7 +839,9 @@ for db in "${DB_FILES[@]}"; do
 
   if [[ "$PHMMER_HITS" -eq 0 ]]; then
     echo "[INFO] No phmmer hits for $name"
-    printf '%s,%s,0,%s,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" "$PHMMER_BELOW_THRESHOLD" >> "$SUMMARY_CSV"
+    if [[ "$WRITE_SUMMARY" == true ]]; then
+        printf '%s,%s,0,%s,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" "$PHMMER_BELOW_THRESHOLD" >> "$SUMMARY_CSV"
+    fi
     continue
   fi
 
@@ -721,7 +870,9 @@ for db in "${DB_FILES[@]}"; do
 
   if [[ "$EXTRACTED_PROTEINS" -eq 0 ]]; then
     echo "WARN: protein extraction failed for $name" >&2
-    printf '%s,%s,0,0,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" >> "$SUMMARY_CSV"
+    if [[ "$WRITE_SUMMARY" == true ]]; then
+        printf '%s,%s,0,0,0,0,0,0,no,no\n' "$name" "$TOTAL_SEQS" >> "$SUMMARY_CSV"
+    fi
     continue
   fi
 
@@ -752,19 +903,17 @@ for db in "${DB_FILES[@]}"; do
   else
 
   if [[ "$DB_TYPE" == "cds" ]]; then
-    # Strategy 1: exact protein IDs
     grep '^>' "$PROT_OUT" | sed 's/^>//' > "$CDS_ID_LIST"
     seqkit grep -n -f "$CDS_ID_LIST" "$CDS_DB_CLEAN" > "$CDS_OUT" || true
     CDS_FINAL=$(safe_count "$CDS_OUT")
   if [[ "$CDS_FINAL" -eq 0 ]]; then
-    echo "[INFO] Exact CDS ID match failed. Trying pipe-based IDs."
+    echo "[INFO] Exact CDS ID match failed. Trying alternative strategy 1."
     sed -E 's/^.*\|//' "$CDS_ID_LIST" > "${CDS_ID_LIST}.pipe"
     seqkit grep -n -f "${CDS_ID_LIST}.pipe" "$CDS_DB_CLEAN" > "$CDS_OUT" || true
     CDS_FINAL=$(safe_count "$CDS_OUT")
   fi
-  # Strategy 3: try protein headers directly
   if [[ "$CDS_FINAL" -eq 0 ]]; then
-    echo "[INFO] Pipe-based CDS ID match failed. Trying protein headers."
+    echo "[INFO] Alternative strategy 1 CDS ID match failed. Trying alternative strategy 2."
     grep '^>' "$PROT_OUT" | sed 's/^>//' > "${CDS_ID_LIST}.headers"
     seqkit grep -n -r -f "${CDS_ID_LIST}.headers" "$CDS_DB_CLEAN" > "$CDS_OUT" || true
     CDS_FINAL=$(safe_count "$CDS_OUT")
@@ -786,9 +935,9 @@ for db in "${DB_FILES[@]}"; do
 
   [[ -s "$CDS_OUT" ]] && CDS_EXISTS="yes"
   [[ -s "$PROT_OUT" ]] && PROT_EXISTS="yes"
-
-  printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' "$name" "$TOTAL_SEQS" "$PHMMER_HITS" "$PHMMER_BELOW_THRESHOLD" "$EXTRACTED_PROTEINS" "$HMMSEARCH_FILTERED_OUT" "$PROTEINS_FINAL" "$CDS_FINAL" "$CDS_EXISTS" "$PROT_EXISTS" >> "$SUMMARY_CSV"
-
+  if [[ "$WRITE_SUMMARY" == true ]]; then
+    printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' "$name" "$TOTAL_SEQS" "$PHMMER_HITS" "$PHMMER_BELOW_THRESHOLD" "$EXTRACTED_PROTEINS" "$HMMSEARCH_FILTERED_OUT" "$PROTEINS_FINAL" "$CDS_FINAL" "$CDS_EXISTS" "$PROT_EXISTS" >> "$SUMMARY_CSV"
+  fi  
   cleanup_temp_files
 done
 
@@ -804,6 +953,11 @@ echo "[INFO] Summary written to: $SUMMARY_CSV"
 
 )
 done
+
+if [[ "$QUERY_COUNT" -gt 1 ]]; then
+    combine_query_summaries
+    echo "[INFO] Master log written to: $MASTER_LOG"
+fi
 
 if [[ -n "${TMP_QUERY_DIR:-}" ]]; then
     rm -rf "$TMP_QUERY_DIR"
