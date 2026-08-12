@@ -3,6 +3,8 @@
 
 It was developed to streamline a common comparative genomics workflow: searching databases for homologs, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloMiner` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses across diverse genomic datasets.
 
+With `PhyloMiner`, you can curate a set of locally stored databases which can be easily queried with your sequence of interest. It allows species set or genome version to be adjusted with ease, important considerations when building alignments and phylogenetic trees. It is capable of multifasta queries, and will produce a summary table of all hits at the end of a multifasta run, allowing for quick and easy presence-absence assessment. The output files are organised to be easily integrated into phylogenetic pipelines.
+
 ## Overview
 `PhyloMiner` automates the following steps:
 
