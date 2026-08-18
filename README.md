@@ -178,12 +178,13 @@ mafft --localpair --maxiterate 1000 input.fasta > output_align.fasta
 trimal -in output_align.fasta -out output_trim.fasta -fasta -gappyout
 iqtree2 -s output_trim.fasta -m MFP -bb 10000 -ninit 10000 -nm 10000 -T AUTO
 ```
+
+## Statement on the use of AI in development
+I have used the assistance of ChatGPT for refining the code and some of the documentation of this pipeline. I have not used it to decide on the steps of the pipeline, nor for the conceptualisation of it. Each stage of the pipeline has been tested thoroughly and is expected to be robust for that reason - the pipeline's outputs are not expected to be affected by the use of AI. However, if you encounter any unusual errors or find that the pipeline is not behaving as expected for a particular dataset, feel free to get in contact and I am happy to look into any issues.
+
 ## Citation
 If you use `PhyloMiner` in published research, please consider citing this repository or the associated publication, when available:
 - Hoey DJ. *PhyloMiner: automated homology mining for comparative phylogenomics*. GitHub repository: https://github.com/davidjhoey/phylominer
-
-## AI Disclosure
-I have used the assistance of ChatGPT for refining the code and some of the documentation of this pipeline. I have not used it to decide on the steps of the pipeline, nor for the conceptualisation of it.
 
 ## Licence
 PhyloMiner is released under the GNU General Public License v3.0 (GPLv3). This means that the software and derivative versions will remain freely available, modifiable, and open source.
