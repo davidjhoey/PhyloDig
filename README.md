@@ -146,7 +146,7 @@ database_directory/
     └── translated_databases/
         └── Cached protein translations of CDS databases
 ```
-In multifasta mode, PhyloDig also produces a master phylodig.txt log and a summary table of all queries.
+In multifasta mode, `PhyloDig` also produces a master `phylodig.txt` log and a summary table of all queries.
 
 ## Below-threshold searches
 
