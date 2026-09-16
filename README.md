@@ -1,12 +1,12 @@
-# PhyloMiner
-`PhyloMiner` is a command-line pipeline for identifying and extracting homologous sequences from collections of protein or coding sequence (CDS) databases.
+# PhyloDig
+`PhyloDig` is a command-line pipeline for identifying and extracting homologous sequences from collections of protein or coding sequence (CDS) databases.
 
-It was developed to streamline a common comparative genomics workflow: searching databases for homologs, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloMiner` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses across diverse genomic datasets.
+It was developed to streamline a common comparative genomics workflow: searching databases for homologs, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloDig` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses across diverse genomic datasets.
 
-With `PhyloMiner`, you can curate a set of locally stored databases which can be easily queried with your sequence of interest. It allows species set or genome version to be adjusted with ease, important considerations when building alignments and phylogenetic trees. It is capable of multifasta queries, and will produce a summary table of all hits at the end of a multifasta run, allowing for quick and easy presence-absence assessment. The output files are organised to be easily integrated into phylogenetic pipelines.
+With `PhyloDig`, you can curate a set of locally stored databases which can be easily queried with your sequence of interest. It allows species set or genome version to be adjusted with ease, important considerations when building alignments and phylogenetic trees. It is capable of multifasta queries, and will produce a summary table of all hits at the end of a multifasta run, allowing for quick and easy presence-absence assessment. The output files are organised to be easily integrated into phylogenetic pipelines.
 
 ## Overview
-`PhyloMiner` automates the following steps:
+`PhyloDig` automates the following steps:
 
 - Automatically detects whether the query and database are protein or nucleotide input (multifasta supported for queries).
 - Searches protein databases directly with `phmmer` and retains homologs above the inclusion threshold.
@@ -21,7 +21,7 @@ With `PhyloMiner`, you can curate a set of locally stored databases which can be
 
 ## Installation 
 ### Dependencies
-`PhyloMiner` uses the following tools:
+`PhyloDig` uses the following tools:
 
 - HMMER (`phmmer`, `hmmsearch`, `hmmfetch`)
 - EMBOSS (`transeq`)
@@ -44,23 +44,23 @@ hmmpress ./Pfam-A.hmm
 ```
 This produces four index files which will allow `hmmsearch` to work.
 ### Usage
-`PhyloMiner` is currently distributed as a shell script. Make the script executable:
+`PhyloDig` is currently distributed as a shell script. Make the script executable:
 ```
-chmod +x phylominer.sh
+chmod +x phylodig.sh
 ```
 You can then run it directly:
 ```
-./phylominer.sh [options] query.fasta /path/to/databases
+./phylodig.sh [options] query.fasta /path/to/databases
 ```
 Or, without changing permissions:
 ```
-bash phylominer.sh [options] query.fasta /path/to/databases
+bash phylodig.sh [options] query.fasta /path/to/databases
 ```
 For Pfam filtering, provide the location of Pfam-A.hmm using the `--pfam-db` option.
 
 ## Quickstart
 ```
-./phylominer.sh [options] query.fasta /path/to/databases
+./phylodig.sh [options] query.fasta /path/to/databases
 ```
 ### Required arguments
 - `query.fasta`
@@ -136,21 +136,21 @@ database_directory/
 │
 ├── Query_results/
 │   ├── Summary statistics (.csv)
-│   ├── Run log (phylominer.txt)
+│   ├── Run log (phylodig.txt)
 │   ├── Homologous protein sequences/
 │   ├── Corresponding CDS sequences/
 │   ├── Search log files (optional, --keep-temp)
 │   └── Temporary working files (deleted by default)
 │
-└── .phylominer_cache/
+└── .phylodig_cache/
     └── translated_databases/
         └── Cached protein translations of CDS databases
 ```
-In multifasta mode, PhyloMiner also produces a master phylominer.txt log and a summary table of all queries.
+In multifasta mode, PhyloDig also produces a master phylodig.txt log and a summary table of all queries.
 
 ## Below-threshold searches
 
-- By default, `PhyloMiner` follows the standard HMMER inclusion thresholds and reports only statistically significant homologs. However, `PhyloMiner` can optionally retain hits below the default HMMER inclusion threshold (`--include-below-threshold`).
+- By default, `PhyloDig` follows the standard HMMER inclusion thresholds and reports only statistically significant homologs. However, `PhyloDig` can optionally retain hits below the default HMMER inclusion threshold (`--include-below-threshold`).
 - This is a practical way to search for highly divergent homologs, and is particularly useful when used in combination with the optional Pfam domain filtering (`--motif-hmm HMM_ID`) to recover true family members that might otherwise be missed.
 - Including below-threshold hits may also be desirable when searching distantly related species, poorly annotated genomes, or attempting to trace the broader evolutionary origins of a particular gene family.
 
@@ -158,12 +158,12 @@ In multifasta mode, PhyloMiner also produces a master phylominer.txt log and a s
 - Input queries can be in multifasta format, as well as single-sequence input.
 - Each query will get its own folder with a folder name derived from the sequence header name.
 - Please note: applying PFAM filters in multifasta mode will result in the same PFAM filter being applied to all queries which may not be desirable.
-- In multifasta mode, PhyloMiner will produce a final summary table with all final protein hits for each query.
+- In multifasta mode, PhyloDig will produce a final summary table with all final protein hits for each query.
 
 ## Other notes
 - If a database is nucleotide-based, both protein and CDS outputs are written.
 - Input databases should be in `.fa` FASTA format, which are protected from deletion by the script.
-- `PhyloMiner` could be combined with _ab initio_ annotation software, such as `Helixer`, to reduce biases introduced by different annotation softwares for lineage-specific gene discovery.
+- `PhyloDig` could be combined with _ab initio_ annotation software, such as `Helixer`, to reduce biases introduced by different annotation softwares for lineage-specific gene discovery.
 
 ## Downstream analysis
 After extracting homologs, standard phylogenetic processing can be carried out with the following recommended tools:
@@ -183,8 +183,8 @@ iqtree2 -s output_trim.fasta -m MFP -bb 10000 -ninit 10000 -nm 10000 -T AUTO
 I have used the assistance of ChatGPT for refining the code and some of the documentation of this pipeline. I have not used it to decide on the steps of the pipeline, nor for the conceptualisation of it. Each stage of the pipeline has been tested thoroughly and is expected to be robust for that reason - the pipeline's outputs are not expected to be affected by the use of AI. However, if you encounter any unusual errors or find that the pipeline is not behaving as expected for a particular dataset, feel free to get in contact and I am happy to look into any issues.
 
 ## Citation
-If you use `PhyloMiner` in published research, please consider citing this repository or the associated publication, when available:
-- Hoey DJ. *PhyloMiner: automated homology mining for comparative phylogenomics*. GitHub repository: https://github.com/davidjhoey/phylominer
+If you use `PhyloDig` in published research, please consider citing this repository or the associated publication, when available:
+- Hoey DJ. *PhyloDig: automated database mining for comparative phylogenomics*. GitHub repository: https://github.com/davidjhoey/phylodig
 
 ## Licence
-PhyloMiner is released under the GNU General Public License v3.0 (GPLv3). This means that the software and derivative versions will remain freely available, modifiable, and open source.
+PhyloDig is released under the GNU General Public License v3.0 (GPLv3). This means that the software and derivative versions will remain freely available, modifiable, and open source.
