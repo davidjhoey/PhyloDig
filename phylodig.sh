@@ -6,9 +6,9 @@ ORIGINAL_ARGS=("$@")
 
 usage() {
   cat <<'EOF'
-PhyloMiner v1.3.2
+PhyloDig v0.1.0
 Usage:
-  ./phylominer.sh [options] query.fasta /path/to/databases
+  ./phylodig.sh [options] query.fasta /path/to/databases
 
 Required:
   query.fasta                 Protein or CDS FASTA query
@@ -527,7 +527,7 @@ fi
 QUERY="$1"
 DB_DIR="$2"
 RUN_ID=$(date +"%Y%m%d_%H%M%S")
-MASTER_LOG="$DB_DIR/phylominer_${RUN_ID}.txt"
+MASTER_LOG="$DB_DIR/phylodig_${RUN_ID}.txt"
 
 if [[ ! -f "$QUERY" ]]; then
   echo "ERROR: query file not found: $QUERY" >&2
@@ -588,7 +588,7 @@ if [[ ${#MOTIF_HMMS[@]} -gt 0 ]]; then
   MOTIF_HMMS=("${RESOLVED_MOTIFS[@]}")
 fi
 
-CACHE_DIR="$DB_DIR/.phylominer_cache"
+CACHE_DIR="$DB_DIR/.phylodig_cache"
 TRANSLATED_DIR="$CACHE_DIR/translated_databases"
 
 mkdir -p "$TRANSLATED_DIR"
@@ -601,7 +601,7 @@ fi
 
 if [[ "$QUERY_COUNT" -gt 1 ]]; then
 {
-  echo "PhyloMiner v${VERSION}"
+  echo "PhyloDig v${VERSION}"
   echo "Date: $(date)"
   echo "Run ID: ${RUN_ID}"
   echo "Command:"
@@ -634,15 +634,15 @@ do
     CURRENT_RESULT_DIRS+=("$BASE_DIR")
 
 (
-    WORKDIR="$BASE_DIR/phylominer_work"
+    WORKDIR="$BASE_DIR/phylodig_work"
     PROT_DIR="$BASE_DIR/proteins"
     CDS_DIR="$BASE_DIR/CDS"
-    LOG_FILE="$BASE_DIR/${QUERY_NAME}_${RUN_ID}_phylominer.txt"
+    LOG_FILE="$BASE_DIR/${QUERY_NAME}_${RUN_ID}_phylodig.txt"
     mkdir -p "$WORKDIR" "$PROT_DIR" "$CDS_DIR"
     CURRENT_RESULT_DIRS+=("$BASE_DIR")
     
 {
-  echo "PhyloMiner v${VERSION}"
+  echo "PhyloDig v${VERSION}"
   echo "Date: $(date)"
   echo "Run ID: ${RUN_ID}"
   echo "Working directory: $(pwd)"
@@ -731,7 +731,7 @@ for db in "${DB_FILES[@]}"; do
       ;;
   esac
 
-  if [[ "$base" == *"phylominer_work"* ]]; then
+  if [[ "$base" == *"phylodig_work"* ]]; then
     continue
   fi
 
