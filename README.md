@@ -5,7 +5,7 @@ It was developed to streamline a common comparative genomics workflow: searching
 
 With `PhyloDig`, you can curate a set of locally stored databases which can be easily queried with your sequence of interest. It allows species set or genome version to be adjusted with ease, important considerations when building alignments and phylogenetic trees. It is capable of multifasta queries, and will produce a summary table of all hits at the end of a multifasta run, allowing for quick and easy presence-absence assessment. The output files are organised to be easily integrated into phylogenetic pipelines.
 
-![alt text](https://github.com/davidjhoey/PhyloDig/blob/main/PhyloDig_logo.png "PhyloDig Logo")
+![alt text](https://github.com/davidjhoey/PhyloDig/blob/main/logo.png "PhyloDig Logo")
 
 ## Overview
 `PhyloDig` automates the following steps:
