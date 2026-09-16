@@ -1,11 +1,11 @@
+![alt text](https://github.com/davidjhoey/PhyloDig/blob/main/logo.png "PhyloDig Logo")
+
 # PhyloDig
 `PhyloDig` is a command-line pipeline for identifying and extracting homologous sequences from collections of protein or coding sequence (CDS) databases.
 
 It was developed to streamline a common comparative genomics workflow: searching databases for homologs, filtering candidate hits, extracting matching sequences from the original databases, and preparing datasets for downstream phylogenetic analysis. `PhyloDig` integrates established homology search and domain-filtering approaches into a single reproducible workflow, reducing the need for manual sequence processing during large-scale gene family analyses across diverse genomic datasets.
 
 With `PhyloDig`, you can curate a set of locally stored databases which can be easily queried with your sequence of interest. It allows species set or genome version to be adjusted with ease, important considerations when building alignments and phylogenetic trees. It is capable of multifasta queries, and will produce a summary table of all hits at the end of a multifasta run, allowing for quick and easy presence-absence assessment. The output files are organised to be easily integrated into phylogenetic pipelines.
-
-![alt text](https://github.com/davidjhoey/PhyloDig/blob/main/logo.png "PhyloDig Logo")
 
 ## Overview
 `PhyloDig` automates the following steps:
