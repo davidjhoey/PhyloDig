@@ -12,7 +12,7 @@ With `PhyloDig`, you can curate a set of locally stored databases which can be e
 
 - Automatically detects whether the query and database are protein or nucleotide input (multifasta supported for queries).
 - Searches protein databases directly with `phmmer` and retains homologs above the inclusion threshold.
-- There is an optional permissive mode using `--keep-below-threshold` which retains HMMER hits which did not meet the inclusion threshold. 
+- There is an optional permissive mode using `--include-below-threshold` which retains HMMER hits which did not meet the inclusion threshold. 
 - Translates CDS databases to protein before searching using `transeq`.
 - Optionally filters candidate hits with one or more Pfam profile HMMs using `hmmsearch`.
 - Extracts matching protein sequences.
