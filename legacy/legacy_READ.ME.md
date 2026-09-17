@@ -1,6 +1,6 @@
 
 ## phmmer scaled up
-It may be necessary to run phmmer on many databases. If so, here are some scripts which are helpful with that. These scripts are now in the 'legacy' folder, and formed the basis for `PhyloMiner`.
+It may be necessary to run phmmer on many databases. If so, here are some scripts which are helpful with that. These scripts are now in the 'legacy' folder, and formed the basis for `PhyloDig`.
 ### 1. Run phmmer on a directory of proteomes
 If you need to find homologs from many genomes, run phmmer on all of these with a query file of a closely related species. 
 Use the file **run_phmmer.sh** (now in the legacy folder) to run phmmer on all proteomes in a directory, using a query file.
@@ -50,4 +50,4 @@ The script **extract_all_ids_autoextract.sh** (also now in the legacy folder) co
 ```
 ./extract_all_ids_autoextract.sh /path/to/phmmer_outputs
 ```
-The above scripts are made obsolete by `PhyloMiner`, but may still be useful if you need to do these tasks individually.
+The above scripts are made obsolete by `PhyloDig`, but may still be useful if you need to do these tasks individually.
