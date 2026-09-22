@@ -497,7 +497,7 @@ KEEP_TEMP=false
 THREADS=1
 PFAM_DB=""
 MOTIF_HMMS=()
-VERSION="1.3.2"
+VERSION="0.1.0"
 INCLUDE_BELOW_THRESHOLD=false
 
 while [[ $# -gt 0 ]]; do
