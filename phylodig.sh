@@ -6,9 +6,9 @@ ORIGINAL_ARGS=("$@")
 
 usage() {
   cat <<'EOF'
-PhyloDig v0.1.0
+PhyloDig v0.1.1
 Usage:
-  ./phylodig.sh [options] query.fasta /path/to/databases
+  phylodig [options] query.fasta /path/to/databases
 
 Required:
   query.fasta                 Protein or CDS FASTA query
@@ -497,7 +497,7 @@ KEEP_TEMP=false
 THREADS=1
 PFAM_DB=""
 MOTIF_HMMS=()
-VERSION="0.1.0"
+VERSION="0.1.1"
 INCLUDE_BELOW_THRESHOLD=false
 
 while [[ $# -gt 0 ]]; do

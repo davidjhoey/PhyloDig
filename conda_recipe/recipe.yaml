@@ -1,0 +1,29 @@
+schema_version: 1
+
+context:
+  version: "0.1.0"
+
+package:
+  name: phylodig
+  version: ${{ version }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  noarch: generic
+  script:
+    - mkdir -p $PREFIX/bin
+    - cp phylodig.sh $PREFIX/bin/phylodig
+    - chmod +x $PREFIX/bin/phylodig
+
+requirements:
+  run:
+    - emboss
+    - hmmer
+    - seqkit
+
+tests:
+  - script:
+      - phylodig --help
