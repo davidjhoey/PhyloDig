@@ -21,15 +21,34 @@ With `PhyloDig`, you can curate a set of locally stored databases which can be e
 - Optionally retains intermediate files for inspection and troubleshooting.
 - The pipeline is designed to be robust in handling inconsistent gene identifiers and difficult datasets.
 
-## Installation 
-### Dependencies
+## Installation
+`phylodig` and dependencies are currently available through `bioconda`. 
+```
+conda config --add channels bioconda
+conda install phylodig
+```
+It is recommended to install through bioconda, but if you would like to install manually, please follow the instructions below.
+
+## Quickstart
+```
+phylodig [options] query.fasta /path/to/databases
+```
+### Required arguments
+- `query.fasta`
+Protein or CDS FASTA query
+- `/path/to/databases`
+Directory containing FASTA databases.
+Note: these should be in `.fa` format as this file format is protected from accidental deletion.
+
+### Manual installation
+#### Dependencies
 `PhyloDig` uses the following tools:
 
 - HMMER (`phmmer`, `hmmsearch`, `hmmfetch`)
 - EMBOSS (`transeq`)
 - SeqKit (`seqkit`)
 
-### Download
+#### Download
 Download dependencies using anaconda:
 ```
 conda install -c bioconda hmmer emboss seqkit
@@ -45,8 +64,13 @@ You will also need to prepare the HMM profiles from Pfam-A.hmm using `hmmpress`.
 hmmpress ./Pfam-A.hmm
 ```
 This produces four index files which will allow `hmmsearch` to work.
-### Usage
-`PhyloDig` is currently distributed as a shell script. Make the script executable:
+## Usage
+If installed through bioconda, use the following command:
+```
+phylodig [options] query.fasta /path/to/databases
+```
+If you have opted for manual installation, `phylodig` is distributed as a shell script. 
+Make the script executable:
 ```
 chmod +x phylodig.sh
 ```
@@ -59,17 +83,6 @@ Or, without changing permissions:
 bash phylodig.sh [options] query.fasta /path/to/databases
 ```
 For Pfam filtering, provide the location of Pfam-A.hmm using the `--pfam-db` option.
-
-## Quickstart
-```
-./phylodig.sh [options] query.fasta /path/to/databases
-```
-### Required arguments
-- `query.fasta`
-Protein or CDS FASTA query
-- `/path/to/databases`
-Directory containing FASTA databases.
-Note: these should be in `.fa` format as this file format is protected from accidental deletion.
 
 ### Options
 - `-f`
